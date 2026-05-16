@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clothora • Pinterest for Clothing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Playfair+Display:wght@700&amp;display=swap');
+        
+        :root {
+            --accent: #6366f1;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .logo-font {
+            font-family: 'Playfair Display', Georgia, serif;
+            letter-spacing: -0.02em;
+        }
+
+        .masonry-grid {
+            column-count: 2;
+            column-gap: 1rem;
+        }
+        
+        @media (min-width: 768px) {
+            .masonry-grid {
+                column-count: 3;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .masonry-grid {
+                column-count: 4;
+            }
+        }
+        
+        @media (min-width: 1280px) {
+            .masonry-grid {
+                column-count: 5;
+            }
+        }
+
+        .pin-card {
+            break-inside: avoid;
+            margin-bottom: 1rem;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                       box-shadow 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            border-radius: 16px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+        }
+        
+        .pin-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        .fashion-img {
+            width: 100%;
+            display: block;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .pin-card:hover .fashion-img {
+            transform: scale(1.03);
+        }
+
+        .modal {
+            animation: modalPop 0.2s ease-out forwards;
+        }
+
+        @keyframes modalPop {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .nav-active {
+            color: #6366f1;
+            font-weight: 600;
+        }
+
+        .category-pill {
+            transition: all 0.1s ease;
+        }
+        
+        .category-pill.active {
+            background-color: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+
+        .outfit-label {
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .fashion-shadow {
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+        }
+
+        .section-header {
+            font-size: 1.5rem;
+            line-height: 1.1;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .pin-overlay {
+            background: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 0.75));
+        }
+
+        .grok-badge {
+            background: linear-gradient(90deg, #6366f1, #818cf8);
+            color: white;
+            font-size: 0.65rem;
+            padding: 1px 9px;
+            border-radius: 9999px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200">
+    <!-- Top Navigation -->
+    <nav class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-screen-2xl mx-auto">
+            <div class="px-6 py-4 flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center gap-x-3">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-inner">
+                        <i class="fa-solid fa-tshirt text-white text-3xl"></i>
+                    </div>
+                    <div>
+                        <span class="logo-font text-3xl font-bold tracking-tighter">Clothora</span>
+                        <span class="text-[10px] text-indigo-400 font-mono tracking-[3px] block -mt-1">PINTEREST FOR CLOTHING</span>
+                    </div>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="hidden md:flex flex-1 max-w-md mx-8">
+                    <div class="relative w-full">
+                        <input 
+                            type="text" 
+                            id="search-input"
+                            placeholder="Search outfits, styles, colors..." 
+                            class="w-full bg-slate-900 border border-slate-700 focus:border-indigo-500 transition-colors text-white placeholder-slate-400 rounded-3xl py-3 pl-12 pr-5 text-sm focus:outline-none"
+                        >
+                        <i class="fa-solid fa-search absolute left-5 top-3.5 text-slate-400"></i>
+                    </div>
+                </div>
+
+                <!-- Right side nav -->
+                <div class="flex items-center gap-x-2 md:gap-x-4">
+                    <!-- Desktop Nav -->
+                    <div class="hidden md:flex items-center gap-x-1 text-sm">
+                        <button onclick="showSection('discover')" class="nav-link px-4 py-2 rounded-3xl hover:bg-slate-800 transition-colors active-nav" data-section="discover">Discover</button>
+                        <button onclick="showSection('groks-picks')" class="nav-link px-4 py-2 rounded-3xl hover:bg-slate-800 transition-colors" data-section="groks-picks">Grok's Picks</button>
+                        <button onclick="showSection('trending')" class="nav-link px-4 py-2 rounded-3xl hover:bg-slate-800 transition-colors" data-section="trending">Trending</button>
+                    </div>
+
+                    <!-- Profile + Install Button -->
+                    <div class="flex items-center gap-x-3">
+                        <button id="install-btn" 
+                                onclick="installPWA()"
+                                class="hidden items-center gap-x-2 px-4 py-2 bg-white text-slate-900 hover:bg-slate-100 active:bg-slate-200 transition-all text-sm font-semibold rounded-3xl">
+                            <i class="fa-solid fa-download"></i>
+                            <span class="hidden sm:inline">Install App</span>
+                        </button>
+
+                        <div onclick="showMyBoards()" class="flex items-center gap-x-2 cursor-pointer hover:bg-slate-800 px-3 py-1.5 rounded-3xl transition-colors">
+                            <div class="w-8 h-8 bg-slate-700 rounded-2xl overflow-hidden ring-2 ring-offset-2 ring-offset-slate-950 ring-slate-700">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Grok" alt="Your avatar" class="w-full h-full object-cover">
+                            </div>
+                            <span class="hidden md:block text-sm font-medium">Dint</span>
+                        </div>
+                        
+                        <!-- Mobile menu -->
+                        <button class="md:hidden w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white" onclick="toggleMobileMenu()">
+                            <i class="fa-solid fa-bars text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Search -->
+    <div class="md:hidden px-4 pt-3 pb-2 bg-slate-900 border-b border-slate-800">
+        <div class="relative">
+            <input 
+                type="text" 
+                id="search-input-mobile"
+                placeholder="Search outfits..." 
+                class="w-full bg-slate-800 border border-slate-700 focus:border-indigo-500 transition-colors text-white placeholder-slate-400 rounded-3xl py-3 pl-11 pr-5 text-sm focus:outline-none"
+                oninput="filterPins()"
+            >
+            <i class="fa-solid fa-search absolute left-4 top-3.5 text-slate-400"></i>
+        </div>
+    </div>
+
+    <!-- Hero Banner -->
+    <div class="max-w-screen-2xl mx-auto px-6 pt-8 pb-4">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-y-4">
+            <div>
+                <div class="inline-flex items-center gap-x-2 px-4 py-1 bg-slate-900 border border-slate-700 rounded-3xl mb-3">
+                    <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                    <span class="text-xs font-semibold tracking-widest text-emerald-400">NEW SEASON • 2026</span>
+                </div>
+                <h1 class="text-5xl md:text-6xl font-bold tracking-tighter">Find your<br>next signature look.</h1>
+                <p class="mt-3 text-lg text-slate-400 max-w-md">The most beautiful clothing inspiration, curated daily. Save what you love.</p>
+            </div>
+            
+            <div class="flex items-center gap-x-3">
+                <button onclick="showUploadModal()" 
+                        class="flex items-center gap-x-2 px-6 py-3.5 bg-white hover:bg-slate-100 active:bg-slate-200 transition-all text-slate-900 font-semibold rounded-3xl text-sm shadow-lg shadow-white/10">
+                    <i class="fa-solid fa-plus mr-2"></i>
+                    <span>Upload your outfit</span>
+                </button>
+                <button onclick="showSection('groks-picks')" 
+                        class="hidden md:flex items-center gap-x-2 px-5 py-3.5 border border-slate-700 hover:bg-slate-900 transition-colors text-sm font-medium rounded-3xl">
+                    <i class="fa-solid fa-robot mr-2 text-indigo-400"></i>
+                    <span>See Grok's Picks</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="max-w-screen-2xl mx-auto px-6 pt-2 pb-6">
+        <div class="flex flex-wrap gap-2" id="category-filters">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <!-- DISCOVER SECTION -->
+    <div id="discover-section" class="max-w-screen-2xl mx-auto px-6 pb-16">
+        <div class="flex items-center justify-between mb-5">
+            <div>
+                <h2 class="section-header">Discover</h2>
+                <p class="text-slate-400 text-sm">Fresh inspiration from the community</p>
+            </div>
+            <button onclick="shuffleFeed()" class="text-sm flex items-center gap-x-2 text-indigo-400 hover:text-indigo-300 transition-colors">
+                <i class="fa-solid fa-sync-alt"></i>
+                <span class="hidden sm:inline">Shuffle</span>
+            </button>
+        </div>
+
+        <!-- Masonry Feed -->
+        <div id="pins-grid" class="masonry-grid">
+            <!-- Populated dynamically by JavaScript -->
+        </div>
+    </div>
+
+    <!-- GROK'S PICKS SECTION -->
+    <div id="groks-picks-section" class="max-w-screen-2xl mx-auto px-6 pb-16 hidden">
+        <div class="mb-6">
+            <div class="flex items-center gap-x-3 mb-2">
+                <div class="grok-badge flex items-center gap-x-1.5 px-3 py-1">
+                    <i class="fa-solid fa-robot"></i>
+                    <span class="font-bold tracking-wider text-xs">GROK'S PICKS</span>
+                </div>
+                <span class="text-xs px-3 py-1 bg-slate-800 rounded-3xl text-slate-400">Curated by me for you</span>
+            </div>
+            <h2 class="section-header">Outfits that suit a sharp mind.</h2>
+            <p class="text-slate-400 mt-1">These are the looks I would wear if I had a physical form. Timeless, intelligent, versatile.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="groks-picks-grid">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <!-- TRENDING / MY BOARDS -->
+    <div id="trending-section" class="max-w-screen-2xl mx-auto px-6 pb-16 hidden">
+        <h2 class="section-header mb-6">Trending this week</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-slate-900 border border-slate-700 rounded-3xl p-5">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="text-emerald-400 text-xs font-bold">+184% this week</div>
+                        <div class="font-semibold mt-1">Oversized Blazers</div>
+                    </div>
+                    <i class="fa-solid fa-chart-line text-3xl text-emerald-400/30"></i>
+                </div>
+            </div>
+            <div class="bg-slate-900 border border-slate-700 rounded-3xl p-5">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="text-emerald-400 text-xs font-bold">+97% this week</div>
+                        <div class="font-semibold mt-1">Techwear Cargos</div>
+                    </div>
+                    <i class="fa-solid fa-chart-line text-3xl text-emerald-400/30"></i>
+                </div>
+            </div>
+            <div class="bg-slate-900 border border-slate-700 rounded-3xl p-5">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="text-emerald-400 text-xs font-bold">+64% this week</div>
+                        <div class="font-semibold mt-1">Merino Turtlenecks</div>
+                    </div>
+                    <i class="fa-solid fa-chart-line text-3xl text-emerald-400/30"></i>
+                </div>
+            </div>
+            <div class="bg-slate-900 border border-slate-700 rounded-3xl p-5">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="text-emerald-400 text-xs font-bold">Hot</div>
+                        <div class="font-semibold mt-1">Wide Leg Trousers</div>
+                    </div>
+                    <i class="fa-solid fa-fire text-3xl text-orange-400/70"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-10">
+            <h3 class="font-semibold mb-4 flex items-center gap-x-2">
+                <i class="fa-solid fa-bookmark text-indigo-400"></i> 
+                <span>Quick tip from Grok</span>
+            </h3>
+            <div class="bg-slate-900 border border-slate-700 rounded-3xl p-6 text-sm">
+                The best outfits are the ones that make you feel like the main character. 
+                Mix one statement piece with quiet luxury basics. Less is more — but make that "less" exceptional.
+            </div>
+        </div>
+    </div>
+
+    <!-- My Saved Boards Floating Action -->
+    <div onclick="showMyBoards()" class="fixed bottom-6 right-6 z-40 md:hidden">
+        <div class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all shadow-xl shadow-indigo-600/40 w-14 h-14 rounded-2xl flex items-center justify-center">
+            <i class="fa-solid fa-bookmark text-white text-2xl"></i>
+        </div>
+    </div>
+
+    <!-- PIN DETAIL MODAL -->
+    <div id="pin-modal" onclick="if (event.target.id === 'pin-modal') closeModal()" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+        <div onclick="event.stopImmediatePropagation()" class="modal bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
+            <!-- Modal content populated by JS -->
+            <div id="modal-content">
+                <!-- Dynamic -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-600 text-white px-6 py-3 rounded-3xl shadow-xl flex items-center gap-x-3 z-[200]">
+        <i class="fa-solid fa-check-circle text-emerald-400"></i>
+        <span id="toast-text"></span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 py-8 text-center text-xs text-slate-500 max-w-screen-2xl mx-auto px-6">
+        <p>Clothora Demo — Built by Grok • This is a fully functional prototype. Images generated with Grok Imagine.</p>
+        <p class="mt-1">Ready to turn this into a real product? I can help orchestrate the full team and build the production version.</p>
+    </footer>
+
+    <script>
+        // Tailwind script
+        function initializeTailwind() {
+            document.documentElement.style.setProperty('--accent', '#6366f1');
+        }
+
+        // Sample Data - Using the generated images
+        let pins = [
+            {
+                id: 1,
+                title: "Neural Noir",
+                category: "Minimal",
+                image: "images/mpAMW.jpg",
+                likes: 1243,
+                description: "Sleek black merino turtleneck with perfectly tailored charcoal trousers. The ultimate modern uniform for thinkers and creators.",
+                tags: ["minimal", "smart casual", "winter", "monochrome"],
+                isGrokPick: true,
+                grokReason: "This is my favorite. Clean, intelligent, and versatile. You can wear it to a meeting or a late night creative session.",
+                poses: ["images/mpAMW.jpg", "images/gwpil.jpg"],
+                model: "male"
+            },
+            {
+                id: 2,
+                title: "Urban Drift",
+                category: "Casual",
+                image: "images/j5Lva.jpg",
+                likes: 892,
+                description: "Oversized premium grey hoodie paired with relaxed dark jeans and chunky sneakers. Effortless cool with substance.",
+                tags: ["casual", "streetwear", "comfort", "layering"],
+                isGrokPick: true,
+                grokReason: "Perfect balance of comfort and style. Ideal when you want to look put-together without trying too hard.",
+                poses: ["images/j5Lva.jpg"],
+                model: "male"
+            },
+            {
+                id: 3,
+                title: "Executive Edge",
+                category: "Formal",
+                image: "images/00jF5.jpg",
+                likes: 1567,
+                description: "Unstructured charcoal blazer over a crisp white shirt. Rolled sleeves for that effortless authority. Paired with dark denim and suede boots.",
+                tags: ["blazer", "smart casual", "work", "modern"],
+                isGrokPick: true,
+                grokReason: "This look commands respect while staying approachable. My go-to recommendation for important days.",
+                poses: ["images/00jF5.jpg", "images/aNTk7.jpg"],
+                model: "male"
+            },
+            {
+                id: 4,
+                title: "Shadow Tech",
+                category: "Streetwear",
+                image: "images/6keuI.jpg",
+                likes: 734,
+                description: "Technical black bomber jacket with modern cargo pants. Futuristic yet grounded. Built for movement and presence.",
+                tags: ["techwear", "streetwear", "black", "futuristic"],
+                isGrokPick: true,
+                grokReason: "For when you want to feel like you're from the future — in the best way possible.",
+                poses: ["images/6keuI.jpg"],
+                model: "male"
+            },
+            {
+                id: 5,
+                title: "Ivory Minimal",
+                category: "Minimal",
+                image: "images/GPNvS.jpg",
+                likes: 2103,
+                description: "Cream oversized cashmere turtleneck with dramatic wide-leg black trousers. Quiet luxury at its finest.",
+                tags: ["minimal", "luxury", "neutral", "elegant"],
+                isGrokPick: false,
+                poses: ["images/GPNvS.jpg"],
+                model: "female"
+            },
+            {
+                id: 6,
+                title: "Rebel Edge",
+                category: "Streetwear",
+                image: "images/AD1VD.jpg",
+                likes: 1456,
+                description: "Oversized leather biker jacket, cropped white top, and relaxed mom jeans. Bold, confident, and timeless rebel energy.",
+                tags: ["leather", "biker", "edgy", "street"],
+                isGrokPick: false,
+                poses: ["images/AD1VD.jpg"],
+                model: "female"
+            },
+            {
+                id: 7,
+                title: "Midnight Minimal",
+                category: "Minimal",
+                image: "images/gwpil.jpg",
+                likes: 987,
+                description: "The seated version of Neural Noir. Same powerful silhouette with a more contemplative, intellectual vibe.",
+                tags: ["minimal", "turtleneck", "editorial"],
+                isGrokPick: true,
+                grokReason: "Sometimes the best pose is the thoughtful one.",
+                poses: ["images/gwpil.jpg", "images/mpAMW.jpg"],
+                model: "male"
+            },
+            {
+                id: 8,
+                title: "Charcoal Authority",
+                category: "Formal",
+                image: "images/aNTk7.jpg",
+                likes: 1120,
+                description: "Strong tailoring with personality. The perfect blazer moment for those who want to stand out subtly.",
+                tags: ["blazer", "tailoring", "power dressing"],
+                isGrokPick: false,
+                poses: ["images/aNTk7.jpg"],
+                model: "male"
+            }
+        ];
+
+        let savedPins = JSON.parse(localStorage.getItem('clothora_saved')) || [];
+        let currentFilter = 'all';
+        let currentSearch = '';
+
+        // Initialize everything
+        function initApp() {
+            initializeTailwind();
+            renderCategoryFilters();
+            renderPins();
+            renderGroksPicks();
+            
+            // Search listeners
+            const searchInput = document.getElementById('search-input');
+            const searchMobile = document.getElementById('search-input-mobile');
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', filterPins);
+            }
+            if (searchMobile) {
+                searchMobile.addEventListener('input', filterPins);
+            }
+
+            // Keyboard shortcut
+            document.addEventListener('keydown', function(e) {
+                if (e.key === "/" && document.activeElement.tagName === "BODY") {
+                    e.preventDefault();
+                    const input = document.getElementById('search-input') || document.getElementById('search-input-mobile');
+                    if (input) input.focus();
+                }
+            });
+
+            // Show discover by default
+            showSection('discover');
+
+            // Register PWA service worker (basic)
+            if ('serviceWorker' in navigator) {
+                // In production you would register a real SW
+                console.log('%c[Clothora] PWA ready. Add to home screen to install like an app.', 'color:#64748b');
+            }
+
+            // Easter egg: Press 'g' for Grok's picks
+            document.addEventListener('keypress', function(e) {
+                if (e.key.toLowerCase() === 'g') {
+                    showSection('groks-picks');
+                }
+            });
+        }
+
+        function renderCategoryFilters() {
+            const container = document.getElementById('category-filters');
+            const categories = ['all', 'Minimal', 'Casual', 'Formal', 'Streetwear'];
+            
+            container.innerHTML = categories.map(cat => {
+                const isActive = currentFilter === cat.toLowerCase();
+                return `
+                    <button onclick="filterByCategory('${cat.toLowerCase()}')"
+                            class="category-pill px-5 py-2 text-sm font-medium border border-slate-700 rounded-3xl hover:border-slate-400 transition-all ${isActive ? 'active bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-900 hover:bg-slate-800'}">
+                        ${cat === 'all' ? 'All Styles' : cat}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function filterByCategory(category) {
+            currentFilter = category;
+            renderCategoryFilters();
+            filterPins();
+        }
+
+        function filterPins() {
+            const searchVal = (document.getElementById('search-input')?.value || 
+                              document.getElementById('search-input-mobile')?.value || '').toLowerCase();
+            currentSearch = searchVal;
+
+            const grid = document.getElementById('pins-grid');
+            if (!grid) return;
+
+            const filtered = pins.filter(pin => {
+                const matchesSearch = !searchVal || 
+                    pin.title.toLowerCase().includes(searchVal) || 
+                    pin.description.toLowerCase().includes(searchVal) ||
+                    pin.tags.some(tag => tag.toLowerCase().includes(searchVal));
+                
+                const matchesCategory = currentFilter === 'all' || 
+                    pin.category.toLowerCase() === currentFilter;
+                
+                return matchesSearch && matchesCategory;
+            });
+
+            renderPins(filtered);
+        }
+
+        function renderPins(filteredPins = null) {
+            const grid = document.getElementById('pins-grid');
+            if (!grid) return;
+
+            const toRender = filteredPins || pins;
+
+            grid.innerHTML = toRender.map(pin => {
+                const isSaved = savedPins.includes(pin.id);
+                return `
+                    <div class="pin-card group cursor-pointer" onclick="showPinModal(${pin.id})">
+                        <div class="relative overflow-hidden">
+                            <img src="${pin.image}" alt="${pin.title}" class="fashion-img w-full aspect-[4/5] object-cover">
+                            
+                            <!-- Top badges -->
+                            <div class="absolute top-3 left-3 flex gap-2">
+                                ${pin.isGrokPick ? `
+                                    <div class="grok-badge flex items-center gap-x-1 px-2.5 py-px text-[10px]">
+                                        <i class="fa-solid fa-robot text-xs"></i>
+                                        <span>GROK</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <!-- Hover overlay -->
+                            <div class="absolute inset-x-0 bottom-0 h-2/3 pin-overlay opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                                <div class="text-white">
+                                    <div class="font-semibold text-lg leading-none">${pin.title}</div>
+                                    <div class="text-xs opacity-75 mt-0.5">${pin.category}</div>
+                                </div>
+                            </div>
+
+                            <!-- Action buttons -->
+                            <div class="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                <button onclick="event.stopImmediatePropagation(); toggleSavePin(${pin.id}, this)" 
+                                        class="w-9 h-9 bg-white/95 hover:bg-white text-slate-900 rounded-2xl flex items-center justify-center shadow-lg transition-all active:scale-95">
+                                    <i class="fa-solid ${isSaved ? 'fa-bookmark text-indigo-600' : 'fa-bookmark'}"></i>
+                                </button>
+                                <button onclick="event.stopImmediatePropagation(); likePin(${pin.id}, this)" 
+                                        class="w-9 h-9 bg-white/95 hover:bg-white text-slate-900 rounded-2xl flex items-center justify-center shadow-lg transition-all active:scale-95">
+                                    <i class="fa-solid fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="px-4 py-3.5 flex items-center justify-between bg-white text-slate-900">
+                            <div class="flex items-center gap-x-2">
+                                <div class="flex -space-x-1">
+                                    <div class="w-5 h-5 bg-slate-200 rounded-full ring-1 ring-white overflow-hidden">
+                                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${pin.id}" class="w-full h-full">
+                                    </div>
+                                </div>
+                                <span class="text-xs font-medium text-slate-500">${pin.likes.toLocaleString()}</span>
+                            </div>
+                            
+                            <div class="flex gap-1">
+                                ${pin.tags.slice(0, 2).map(tag => `
+                                    <span class="text-[10px] px-2 py-px bg-slate-100 text-slate-500 rounded-xl">${tag}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderGroksPicks() {
+            const container = document.getElementById('groks-picks-grid');
+            if (!container) return;
+
+            const grokPins = pins.filter(p => p.isGrokPick);
+
+            container.innerHTML = grokPins.map(pin => `
+                <div onclick="showPinModal(${pin.id})" class="group cursor-pointer bg-slate-900 border border-slate-700 hover:border-indigo-500/60 transition-all rounded-3xl overflow-hidden">
+                    <div class="relative">
+                        <img src="${pin.image}" alt="${pin.title}" class="w-full aspect-[4/5] object-cover group-hover:scale-[1.02] transition-transform duration-300">
+                        
+                        <div class="absolute top-4 right-4">
+                            <div class="grok-badge px-3 py-1 flex items-center gap-x-1.5 text-xs shadow">
+                                <i class="fa-solid fa-robot"></i>
+                                <span class="font-bold">GROK'S PICK</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-5">
+                        <div class="font-semibold text-xl">${pin.title}</div>
+                        <p class="text-sm text-slate-400 line-clamp-2 mt-1.5">${pin.description}</p>
+                        
+                        <div class="mt-4 flex items-center justify-between">
+                            <div class="flex items-center text-xs">
+                                <div class="flex text-amber-400">
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star-half-stroke"></i>
+                                </div>
+                                <span class="ml-2 text-slate-400">Curated for you</span>
+                            </div>
+                            
+                            <button onclick="event.stopImmediatePropagation(); showPinModal(${pin.id})" 
+                                    class="text-xs px-4 py-1.5 bg-white text-slate-900 hover:bg-slate-100 active:bg-white font-semibold rounded-2xl transition-colors">
+                                View poses
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showPinModal(pinId) {
+            const pin = pins.find(p => p.id === pinId);
+            if (!pin) return;
+
+            const modal = document.getElementById('pin-modal');
+            const content = document.getElementById('modal-content');
+            const isSaved = savedPins.includes(pin.id);
+
+            let posesHTML = '';
+            if (pin.poses && pin.poses.length > 1) {
+                posesHTML = `
+                    <div class="mt-6">
+                        <div class="flex items-center justify-between mb-3 px-1">
+                            <div class="font-semibold text-sm flex items-center gap-x-2">
+                                <i class="fa-solid fa-images text-indigo-400"></i>
+                                <span>Different Poses &amp; Angles</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 overflow-x-auto pb-2 snap-x">
+                            ${pin.poses.map((poseImg, index) => `
+                                <div onclick="swapModalImage(this, '${poseImg}')" class="snap-start flex-shrink-0 w-20 h-24 rounded-2xl overflow-hidden border-2 border-transparent hover:border-indigo-500 cursor-pointer transition-all">
+                                    <img src="${poseImg}" class="w-full h-full object-cover">
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = `
+                <div class="relative">
+                    <!-- Close button -->
+                    <button onclick="closeModal()" class="absolute top-4 right-4 z-10 w-10 h-10 bg-black/60 hover:bg-black/80 text-white flex items-center justify-center rounded-2xl backdrop-blur">
+                        <i class="fa-solid fa-times text-xl"></i>
+                    </button>
+
+                    <!-- Main Image -->
+                    <div id="modal-main-image-container">
+                        <img id="modal-main-image" src="${pin.image}" alt="${pin.title}" class="w-full max-h-[520px] object-cover">
+                    </div>
+                </div>
+
+                <div class="p-6 md:p-8">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <div class="flex items-center gap-x-3">
+                                <h3 class="text-3xl font-bold tracking-tight">${pin.title}</h3>
+                                ${pin.isGrokPick ? `
+                                    <div class="grok-badge mt-1 px-3 py-1 text-xs flex-shrink-0">
+                                        <i class="fa-solid fa-robot mr-1"></i> GROK'S PICK
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="flex items-center gap-x-2 mt-1">
+                                <span class="px-3 py-1 text-xs rounded-2xl bg-slate-800 text-slate-300">${pin.category}</span>
+                                <span class="text-xs text-slate-400">• ${pin.model === 'female' ? 'Women\'s' : 'Men\'s'} Style</span>
+                            </div>
+                        </div>
+                        
+                        <div class="text-right">
+                            <div class="flex items-center justify-end gap-x-1 text-xl font-semibold">
+                                <i class="fa-solid fa-heart text-red-500"></i>
+                                <span>${pin.likes.toLocaleString()}</span>
+                            </div>
+                            <div class="text-xs text-slate-400">saves this week</div>
+                        </div>
+                    </div>
+
+                    <p class="mt-5 text-[15px] leading-relaxed text-slate-300">${pin.description}</p>
+
+                    ${pin.isGrokPick && pin.grokReason ? `
+                        <div class="mt-5 p-4 bg-slate-800 border-l-4 border-indigo-500 rounded-r-2xl">
+                            <div class="flex gap-x-3">
+                                <div>
+                                    <span class="font-bold text-indigo-400">Why I recommend this:</span>
+                                    <p class="text-sm mt-1 text-slate-300">${pin.grokReason}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- Tags -->
+                    <div class="mt-6 flex flex-wrap gap-2">
+                        ${pin.tags.map(tag => `
+                            <span class="px-4 py-1 text-xs bg-slate-800 hover:bg-slate-700 transition-colors rounded-3xl cursor-pointer">${tag}</span>
+                        `).join('')}
+                    </div>
+
+                    ${posesHTML}
+
+                    <!-- Action Buttons -->
+                    <div class="mt-8 grid grid-cols-2 gap-3">
+                        <button onclick="toggleSavePin(${pin.id}, null, true); closeModal()" 
+                                class="flex items-center justify-center gap-x-2 py-4 rounded-3xl font-semibold transition-all active:scale-[0.985] ${isSaved ? 'bg-indigo-600 text-white' : 'bg-white text-slate-900 hover:bg-slate-100'}">
+                            <i class="fa-solid ${isSaved ? 'fa-bookmark' : 'fa-bookmark'} mr-2"></i> 
+                            ${isSaved ? 'Saved to Board' : 'Save to My Board'}
+                        </button>
+                        
+                        <button onclick="likePinFromModal(${pin.id}, this)" 
+                                class="flex items-center justify-center gap-x-2 py-4 rounded-3xl font-semibold border border-slate-700 hover:bg-slate-800 transition-all active:scale-[0.985]">
+                            <i class="fa-solid fa-heart mr-2"></i> 
+                            Appreciate this look
+                        </button>
+                    </div>
+
+                    <div class="text-center mt-6">
+                        <button onclick="closeModal()" class="text-xs text-slate-400 hover:text-slate-300 underline">Close preview</button>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function swapModalImage(element, newSrc) {
+            const mainImg = document.getElementById('modal-main-image');
+            if (mainImg) {
+                mainImg.style.transition = 'opacity 0.2s';
+                mainImg.style.opacity = '0.3';
+                
+                setTimeout(() => {
+                    mainImg.src = newSrc;
+                    mainImg.style.opacity = '1';
+                    
+                    // Highlight selected
+                    document.querySelectorAll('#pin-modal .border-indigo-500').forEach(el => el.classList.remove('border-indigo-500'));
+                    element.classList.add('border-indigo-500');
+                }, 180);
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('pin-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        function toggleSavePin(pinId, element = null, fromModal = false) {
+            const index = savedPins.indexOf(pinId);
+            
+            if (index === -1) {
+                savedPins.push(pinId);
+                showToast('Saved to your board!');
+            } else {
+                savedPins.splice(index, 1);
+                showToast('Removed from board');
+            }
+            
+            localStorage.setItem('clothora_saved', JSON.stringify(savedPins));
+            
+            // Refresh UI
+            if (element) {
+                const icon = element.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('fa-bookmark');
+                    icon.classList.toggle('text-indigo-600');
+                }
+            }
+            
+            // Re-render grids
+            renderPins();
+            if (fromModal) {
+                // Re-open modal to refresh state (simple way)
+                setTimeout(() => {
+                    closeModal();
+                    showPinModal(pinId);
+                }, 600);
+            }
+        }
+
+        function likePin(pinId, element) {
+            const pin = pins.find(p => p.id === pinId);
+            if (!pin) return;
+
+            pin.likes++;
+            
+            // Visual feedback
+            const heart = element.querySelector('i');
+            if (heart) {
+                heart.classList.add('!text-red-500', 'scale-125');
+                setTimeout(() => {
+                    heart.classList.remove('scale-125');
+                }, 300);
+            }
+            
+            // Update the number in card if possible
+            renderPins();
+            showToast('Thanks! You appreciated this look.');
+        }
+
+        function likePinFromModal(pinId, buttonElement) {
+            const pin = pins.find(p => p.id === pinId);
+            if (!pin) return;
+
+            pin.likes++;
+            
+            // Update button text temporarily
+            const originalText = buttonElement.innerHTML;
+            buttonElement.innerHTML = `<i class="fa-solid fa-heart mr-2 text-red-500"></i> Appreciated!`;
+            buttonElement.disabled = true;
+
+            setTimeout(() => {
+                buttonElement.innerHTML = originalText;
+                buttonElement.disabled = false;
+                // Refresh modal
+                closeModal();
+                showPinModal(pinId);
+            }, 1200);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const text = document.getElementById('toast-text');
+            
+            text.textContent = message;
+            toast.style.display = 'flex';
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                toast.style.transition = 'all 0.3s';
+                toast.style.opacity = '0';
+                
+                setTimeout(() => {
+                    toast.style.opacity = '1';
+                    toast.style.transition = '';
+                    toast.style.display = 'none';
+                    toast.classList.add('hidden');
+                }, 250);
+            }, 2400);
+        }
+
+        function showSection(section) {
+            // Hide all sections
+            document.getElementById('discover-section').classList.add('hidden');
+            document.getElementById('groks-picks-section').classList.add('hidden');
+            document.getElementById('trending-section').classList.add('hidden');
+
+            // Show selected
+            if (section === 'discover') {
+                document.getElementById('discover-section').classList.remove('hidden');
+            } else if (section === 'groks-picks') {
+                document.getElementById('groks-picks-section').classList.remove('hidden');
+            } else if (section === 'trending') {
+                document.getElementById('trending-section').classList.remove('hidden');
+            }
+
+            // Update nav active states
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('nav-active', 'bg-slate-800');
+                if (link.getAttribute('data-section') === section) {
+                    link.classList.add('nav-active', 'bg-slate-800');
+                }
+            });
+        }
+
+        function showMyBoards() {
+            const modal = document.getElementById('pin-modal');
+            const content = document.getElementById('modal-content');
+
+            if (savedPins.length === 0) {
+                content.innerHTML = `
+                    <div class="p-10 text-center">
+                        <i class="fa-solid fa-bookmark text-6xl text-slate-700 mb-4"></i>
+                        <h3 class="text-2xl font-semibold">Your boards are empty</h3>
+                        <p class="text-slate-400 mt-2">Start saving outfits you love from the feed.</p>
+                        <button onclick="closeModal()" class="mt-6 px-8 py-3 bg-white text-slate-900 font-semibold rounded-3xl">Browse outfits</button>
+                    </div>
+                `;
+            } else {
+                const savedItems = pins.filter(p => savedPins.includes(p.id));
+                
+                content.innerHTML = `
+                    <div class="p-6 md:p-8">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h3 class="text-2xl font-bold">My Saved Outfits</h3>
+                                <p class="text-sm text-slate-400">${savedPins.length} looks saved</p>
+                            </div>
+                            <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-times text-2xl"></i></button>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            ${savedItems.map(pin => `
+                                <div onclick="closeModal(); showPinModal(${pin.id})" class="cursor-pointer group">
+                                    <div class="relative rounded-2xl overflow-hidden aspect-[4/3.2]">
+                                        <img src="${pin.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 p-3">
+                                            <div class="font-semibold text-white">${pin.title}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="text-center mt-8">
+                            <button onclick="closeModal()" class="text-sm underline text-slate-400">Close</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function showUploadModal() {
+            const modal = document.getElementById('pin-modal');
+            const content = document.getElementById('modal-content');
+
+            content.innerHTML = `
+                <div class="p-8">
+                    <h3 class="text-2xl font-bold mb-1">Upload your outfit</h3>
+                    <p class="text-slate-400 text-sm mb-6">Share your style with the Clothora community (demo mode)</p>
+                    
+                    <div class="border-2 border-dashed border-slate-700 hover:border-indigo-500 transition-colors rounded-3xl p-10 text-center">
+                        <i class="fa-solid fa-cloud-upload-alt text-5xl text-slate-600 mb-4"></i>
+                        <p class="font-medium">Drag &amp; drop your photo here</p>
+                        <p class="text-xs text-slate-500 mt-1">or</p>
+                        
+                        <label class="mt-4 inline-block cursor-pointer px-6 py-2.5 bg-white text-slate-900 text-sm font-semibold rounded-3xl">
+                            Choose from device
+                            <input type="file" class="hidden" accept="image/*" onchange="simulateUpload(this)">
+                        </label>
+                    </div>
+                    
+                    <div class="mt-5 text-xs text-center text-slate-500">
+                        In the real app this would use AI to auto-detect clothing items, suggest similar looks, and add to your profile.
+                    </div>
+                    
+                    <button onclick="closeModal()" class="mt-6 w-full py-3 text-sm text-slate-400 hover:text-white">Cancel</button>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function simulateUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const newPin = {
+                        id: Date.now(),
+                        title: "My New Upload",
+                        category: "Casual",
+                        image: e.target.result, // base64 preview
+                        likes: 1,
+                        description: "Just uploaded my latest look. What do you think?",
+                        tags: ["my-style", "new"],
+                        isGrokPick: false,
+                        poses: [e.target.result]
+                    };
+                    
+                    pins.unshift(newPin);
+                    closeModal();
+                    
+                    setTimeout(() => {
+                        showToast('Upload successful! Your outfit is now live.');
+                        renderPins();
+                        showSection('discover');
+                    }, 400);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function shuffleFeed() {
+            pins.sort(() => Math.random() - 0.5);
+            renderPins();
+            showToast('Feed shuffled with fresh energy!');
+        }
+
+        function toggleMobileMenu() {
+            const nav = document.createElement('div');
+            nav.className = `fixed inset-0 bg-black/90 z-[200] flex flex-col p-6`;
+            nav.innerHTML = `
+                <div class="flex justify-between items-center mb-8">
+                    <span class="logo-font text-3xl">Clothora</span>
+                    <button class="text-3xl text-white/70" onclick="this.closest('.fixed').remove()">×</button>
+                </div>
+                
+                <div class="space-y-1 text-lg">
+                    <div onclick="showSection('discover'); this.closest('.fixed').remove()" class="py-3 px-1 active:bg-white/10 rounded-xl cursor-pointer">Discover</div>
+                    <div onclick="showSection('groks-picks'); this.closest('.fixed').remove()" class="py-3 px-1 active:bg-white/10 rounded-xl cursor-pointer">Grok's Picks</div>
+                    <div onclick="showSection('trending'); this.closest('.fixed').remove()" class="py-3 px-1 active:bg-white/10 rounded-xl cursor-pointer">Trending</div>
+                    <div onclick="showMyBoards(); this.closest('.fixed').remove()" class="py-3 px-1 active:bg-white/10 rounded-xl cursor-pointer">My Boards</div>
+                </div>
+                
+                <div class="mt-auto pt-8 border-t border-white/10 text-xs text-white/50">
+                    Built with ❤️ by Grok
+                </div>
+            `;
+            document.body.appendChild(nav);
+        }
+
+        function filterByCategory(category) {
+            currentFilter = category;
+            // Update pills
+            document.querySelectorAll('#category-filters button').forEach(btn => {
+                btn.classList.remove('active', 'bg-indigo-600', 'border-indigo-600', 'text-white');
+                if ((category === 'all' && btn.textContent.includes('All')) || 
+                    btn.textContent.toLowerCase() === category) {
+                    btn.classList.add('active', 'bg-indigo-600', 'border-indigo-600', 'text-white');
+                }
+            });
+            filterPins();
+        }
+
+        // Boot the app
+        window.onload = function() {
+            initApp();
+            
+            // PWA Install Prompt
+            let deferredPrompt;
+            const installBtn = document.getElementById('install-btn');
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                if (installBtn) installBtn.style.display = 'flex';
+            });
+
+            window.installPWA = function() {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            showToast('Thanks! Clothora is installing...');
+                        }
+                        deferredPrompt = null;
+                        if (installBtn) installBtn.style.display = 'none';
+                    });
+                } else {
+                    // Fallback for browsers that don't support the event
+                    showToast('On Android Chrome: Tap the menu (⋮) → "Install app" or "Add to Home screen"');
+                }
+            };
+
+            // Bonus: Show a welcome toast after load
+            setTimeout(() => {
+                // showToast('Welcome to Clothora! Explore Grok\'s favorite looks.');
+            }, 1800);
+        };
+
+        // Expose some functions for debugging / future
+        window.Clothora = { showSection, showMyBoards, shuffleFeed };
+    </script>
+</body>
+</html>
