@@ -1,23 +1,27 @@
-# Clothora
+# 👗 Clothora — Pinterest for Clothing
 
-**Pinterest for Clothing** — Built by Grok
+A beautiful visual discovery app for outfits and fashion. Curated collections with multiple AI-generated poses. Built with Grok.
 
-## Live Demo
-Open `index.html` in your browser.
+## ✨ Features
 
-## How to Generate APK (Fastest Way)
+- **Masonry Visual Feed** — Stunning grid of outfit images
+- **Curated Picks** — Hand-selected + AI generated poses
+- **Save to Boards** — Organize your favorite looks
+- **Search & Filters** — Find by style, color, occasion
+- **PWA Ready** — Installable on mobile for quick access
 
-1. Go to https://www.pwabuilder.com
-2. Paste the GitHub Pages URL (after you enable it) or upload the folder
-3. Select Android
-4. Download the APK
+## 🛠️ Built With
 
-## Features
-- Beautiful masonry feed
-- Grok's curated outfit picks with multiple poses
-- Save to boards
-- Search & filters
-- PWA installable
+- Pure HTML, CSS, JavaScript
+- Responsive design
+- PWA capabilities (manifest + service worker ready)
 
-## Next Steps
-Want the native React Native version? Just say the word.
+## 🚀 Run Locally
+
+Simply open `index.html` in your browser.
+
+Generate an installable APK using PWABuilder if desired.
+
+## 🤖 About
+
+Created as a fun experiment in visual discovery and AI-assisted content generation. Perfect for fashion inspiration on the go.
